@@ -42,6 +42,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import javax.swing.event.*;
 
 
 /**
@@ -58,6 +59,7 @@ public class TimerTool extends AbstractToolAndApplication {
     private TimePanel timePanel;
 
     // Internal time values
+    private static int deltaTime = 1;      // The number of miliseconds between timer updates
     private static long time = 0L;      // The current time of the program (starting from 0)
     private static long startTime = 0L; // Tmp unix time used to keep track of how much time has passed
     private static long savedTime = 0L; // Accumulates time as we pause/play the timer
@@ -117,8 +119,17 @@ public class TimerTool extends AbstractToolAndApplication {
                      });
         pauseButton.addKeyListener(new EnterKeyListener(pauseButton));
 
+        JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 1, 10000, 1));
+        spinner.addChangeListener(
+                      new ChangeListener() {
+                          public void stateChanged(ChangeEvent e) {
+                              deltaTime = ((Integer) spinner.getValue()).intValue();
+                          }
+                      });
+
         timePanel.add(playButton);
         timePanel.add(pauseButton);
+        timePanel.add(spinner);
         panelTools.add(timePanel);
         return panelTools;
     }
@@ -142,7 +153,7 @@ public class TimerTool extends AbstractToolAndApplication {
         if (!running) {
             // Start a timer that checks to see if a timer interupt needs to be raised
             // every millisecond
-            timer.schedule(tick, 0, 1);
+            timer.schedule(tick, 0, deltaTime);
             running = true;
         }
     }
